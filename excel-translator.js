@@ -28,6 +28,7 @@ const LANGUAGE_MAP = {
 let workbook = null;
 let translatedWorkbook = null;
 let selectedFile = null;
+let sheetColumnsMap = new Map(); // Map of sheet name -> column info
 
 // DOM Elements
 const fileInput = document.getElementById('fileInput');
@@ -48,6 +49,8 @@ const previewTabs = document.getElementById('previewTabs');
 const previewContent = document.getElementById('previewContent');
 const downloadBtn = document.getElementById('downloadBtn');
 const startOverBtn = document.getElementById('startOverBtn');
+const columnSelectionGroup = document.getElementById('columnSelectionGroup');
+const columnSelectionContainer = document.getElementById('columnSelectionContainer');
 
 // Initialize
 init();
@@ -165,6 +168,7 @@ function readExcelFile(file) {
 
 function populateSheetsList(sheetNames) {
     sheetsList.innerHTML = '';
+    sheetColumnsMap.clear();
 
     sheetNames.forEach((name, index) => {
         const item = document.createElement('div');
@@ -183,8 +187,143 @@ function populateSheetsList(sheetNames) {
         item.appendChild(checkbox);
         item.appendChild(label);
         sheetsList.appendChild(item);
+
+        // Detect columns for this sheet
+        detectSheetColumns(name);
+
+        // Listen for checkbox changes to update column selection display
+        checkbox.addEventListener('change', updateColumnSelectionDisplay);
+    });
+
+    // Initial display of column selection
+    updateColumnSelectionDisplay();
+}
+
+function detectSheetColumns(sheetName) {
+    const sheet = workbook.Sheets[sheetName];
+    const data = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+
+    if (data.length === 0) {
+        sheetColumnsMap.set(sheetName, []);
+        return;
+    }
+
+    // Get first row for preview
+    const firstRow = data[0] || [];
+    const columns = [];
+
+    firstRow.forEach((cellValue, colIndex) => {
+        const columnLetter = XLSX.utils.encode_col(colIndex); // Convert 0 -> A, 1 -> B, etc.
+        const preview = cellValue !== null && cellValue !== undefined ? String(cellValue) : '(empty)';
+
+        columns.push({
+            index: colIndex,
+            letter: columnLetter,
+            preview: preview,
+            selected: true // All columns selected by default
+        });
+    });
+
+    sheetColumnsMap.set(sheetName, columns);
+}
+
+function updateColumnSelectionDisplay() {
+    const selectedSheets = getSelectedSheets();
+
+    if (selectedSheets.length === 0) {
+        columnSelectionGroup.style.display = 'none';
+        return;
+    }
+
+    columnSelectionGroup.style.display = 'block';
+    columnSelectionContainer.innerHTML = '';
+
+    selectedSheets.forEach(sheetName => {
+        const columns = sheetColumnsMap.get(sheetName);
+
+        if (!columns || columns.length === 0) {
+            return;
+        }
+
+        // Create column section for this sheet
+        const section = document.createElement('div');
+        section.className = 'column-section';
+
+        const header = document.createElement('div');
+        header.className = 'column-section-header';
+        header.innerHTML = `
+            <span>📋 ${sheetName}</span>
+            <div class="column-actions">
+                <button class="btn-small" onclick="selectAllColumns('${sheetName}')">Select All</button>
+                <button class="btn-small" onclick="deselectAllColumns('${sheetName}')">Deselect All</button>
+            </div>
+        `;
+
+        const grid = document.createElement('div');
+        grid.className = 'columns-grid';
+        grid.id = `columns-${sheetName}`;
+
+        columns.forEach((col, index) => {
+            const item = document.createElement('label');
+            item.className = 'column-item';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = col.selected;
+            checkbox.dataset.sheet = sheetName;
+            checkbox.dataset.colIndex = col.index;
+            checkbox.addEventListener('change', (e) => {
+                col.selected = e.target.checked;
+            });
+
+            const info = document.createElement('div');
+            info.className = 'column-info';
+
+            const labelText = document.createElement('span');
+            labelText.className = 'column-label';
+            labelText.textContent = `Column ${col.letter}`;
+
+            const previewText = document.createElement('span');
+            previewText.className = 'column-preview';
+            previewText.textContent = col.preview;
+
+            info.appendChild(labelText);
+            info.appendChild(previewText);
+
+            item.appendChild(checkbox);
+            item.appendChild(info);
+
+            grid.appendChild(item);
+        });
+
+        section.appendChild(header);
+        section.appendChild(grid);
+        columnSelectionContainer.appendChild(section);
     });
 }
+
+// Helper functions for select/deselect all buttons
+window.selectAllColumns = function(sheetName) {
+    const columns = sheetColumnsMap.get(sheetName);
+    if (!columns) return;
+
+    columns.forEach(col => col.selected = true);
+
+    // Update UI
+    const checkboxes = document.querySelectorAll(`#columns-${sheetName} input[type="checkbox"]`);
+    checkboxes.forEach(cb => cb.checked = true);
+};
+
+window.deselectAllColumns = function(sheetName) {
+    const columns = sheetColumnsMap.get(sheetName);
+    if (!columns) return;
+
+    columns.forEach(col => col.selected = false);
+
+    // Update UI
+    const checkboxes = document.querySelectorAll(`#columns-${sheetName} input[type="checkbox"]`);
+    checkboxes.forEach(cb => cb.checked = false);
+};
 
 function getSelectedSheets() {
     const checkboxes = sheetsList.querySelectorAll('input[type="checkbox"]:checked');
@@ -233,6 +372,7 @@ async function startTranslation() {
             const originalSheet = workbook.Sheets[sheetName];
             const translatedSheet = await translateSheet(
                 originalSheet,
+                sheetName,
                 sourceLang,
                 targetLang,
                 outputFormat
@@ -261,7 +401,7 @@ async function startTranslation() {
     }
 }
 
-async function translateSheet(sheet, sourceLang, targetLang, outputFormat) {
+async function translateSheet(sheet, sheetName, sourceLang, targetLang, outputFormat) {
     // Convert sheet to 2D array
     const data = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
 
@@ -269,13 +409,26 @@ async function translateSheet(sheet, sourceLang, targetLang, outputFormat) {
         return sheet; // Empty sheet, return as is
     }
 
-    // Collect all unique texts for batch translation
+    // Get selected columns for this sheet
+    const sheetColumns = sheetColumnsMap.get(sheetName) || [];
+    const selectedColumnIndices = sheetColumns
+        .filter(col => col.selected)
+        .map(col => col.index);
+
+    // If no columns selected, return original sheet
+    if (selectedColumnIndices.length === 0) {
+        return sheet;
+    }
+
+    // Collect all unique texts for batch translation (only from selected columns)
     const textsToTranslate = new Set();
     const textMap = new Map(); // Original -> Translated mapping
 
     data.forEach(row => {
-        row.forEach(cell => {
-            if (cell && typeof cell === 'string' && cell.trim()) {
+        row.forEach((cell, colIndex) => {
+            // Only process if this column is selected
+            if (selectedColumnIndices.includes(colIndex) &&
+                cell && typeof cell === 'string' && cell.trim()) {
                 textsToTranslate.add(cell.trim());
             }
         });
@@ -310,10 +463,12 @@ async function translateSheet(sheet, sourceLang, targetLang, outputFormat) {
         });
     }
 
-    // Apply translations to data
+    // Apply translations to data (only to selected columns)
     const translatedData = data.map(row => {
-        return row.map(cell => {
-            if (cell && typeof cell === 'string' && cell.trim()) {
+        return row.map((cell, colIndex) => {
+            // Only translate if this column is selected
+            if (selectedColumnIndices.includes(colIndex) &&
+                cell && typeof cell === 'string' && cell.trim()) {
                 const translated = textMap.get(cell.trim()) || cell;
 
                 if (outputFormat === 'bilingual') {
@@ -322,7 +477,7 @@ async function translateSheet(sheet, sourceLang, targetLang, outputFormat) {
                     return translated;
                 }
             }
-            return cell;
+            return cell; // Keep original for non-selected columns
         });
     });
 
@@ -435,12 +590,14 @@ function resetApp() {
     workbook = null;
     translatedWorkbook = null;
     selectedFile = null;
+    sheetColumnsMap.clear();
     fileInput.value = '';
 
     // Reset UI
     uploadArea.style.display = 'block';
     fileInfo.style.display = 'none';
     settingsCard.style.display = 'none';
+    columnSelectionGroup.style.display = 'none';
     progressCard.style.display = 'none';
     resultCard.style.display = 'none';
 
