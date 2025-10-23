@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Translator - Ultimate Translator</title>
+    <link rel="stylesheet" href="excel-translator.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🌐 Ultimate Translator - Excel Translation</h1>
+            <p class="subtitle">无敌翻译器 - Excel文件翻译</p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Step 1: File Upload -->
+            <section class="card">
+                <h2 class="card-title">📁 Step 1: Upload Excel File</h2>
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="fileInput" accept=".xlsx,.xls" hidden>
+                    <div class="upload-content">
+                        <div class="upload-icon">📊</div>
+                        <p class="upload-text">Click to select Excel file or drag & drop</p>
+                        <p class="upload-hint">Supports .xlsx and .xls formats</p>
+                    </div>
+                </div>
+                <div class="file-info" id="fileInfo" style="display: none;">
+                    <div class="file-icon">✓</div>
+                    <div class="file-details">
+                        <p class="file-name" id="fileName"></p>
+                        <p class="file-size" id="fileSize"></p>
+                    </div>
+                    <button class="btn-change" id="changeFileBtn">Change File</button>
+                </div>
+            </section>
+
+            <!-- Step 2: Translation Settings -->
+            <section class="card" id="settingsCard" style="display: none;">
+                <h2 class="card-title">⚙️ Step 2: Translation Settings</h2>
+
+                <div class="form-group">
+                    <label>Source Language 源语言</label>
+                    <select id="sourceLang" class="select-input">
+                        <option value="english">English</option>
+                        <option value="chinese_simplified">简体中文</option>
+                        <option value="chinese_traditional">繁體中文</option>
+                        <option value="japanese">日本語</option>
+                        <option value="korean">한국어</option>
+                        <option value="spanish">Español</option>
+                        <option value="french">Français</option>
+                        <option value="german">Deutsch</option>
+                        <option value="russian">Русский</option>
+                        <option value="portuguese">Português</option>
+                        <option value="italian">Italiano</option>
+                        <option value="arabic">العربية</option>
+                        <option value="dutch">Nederlands</option>
+                        <option value="polish">Polski</option>
+                        <option value="turkish">Türkçe</option>
+                        <option value="vietnamese">Tiếng Việt</option>
+                        <option value="hindi">हिन्दी</option>
+                        <option value="hebrew">עברית</option>
+                        <option value="thai">ไทย</option>
+                        <option value="indonesian">Bahasa Indonesia</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Target Language 目标语言</label>
+                    <select id="targetLang" class="select-input">
+                        <option value="chinese_simplified">简体中文</option>
+                        <option value="english">English</option>
+                        <option value="chinese_traditional">繁體中文</option>
+                        <option value="japanese">日本語</option>
+                        <option value="korean">한국어</option>
+                        <option value="spanish">Español</option>
+                        <option value="french">Français</option>
+                        <option value="german">Deutsch</option>
+                        <option value="russian">Русский</option>
+                        <option value="portuguese">Português</option>
+                        <option value="italian">Italiano</option>
+                        <option value="arabic">العربية</option>
+                        <option value="dutch">Nederlands</option>
+                        <option value="polish">Polski</option>
+                        <option value="turkish">Türkçe</option>
+                        <option value="vietnamese">Tiếng Việt</option>
+                        <option value="hindi">हिन्दी</option>
+                        <option value="hebrew">עברית</option>
+                        <option value="thai">ไทย</option>
+                        <option value="indonesian">Bahasa Indonesia</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Select Sheets to Translate 选择要翻译的工作表</label>
+                    <div id="sheetsList" class="sheets-list">
+                        <!-- Sheet checkboxes will be dynamically added here -->
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Output Format 输出格式</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="outputFormat" value="replace" checked>
+                            <span>Replace Original 替换原文</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="outputFormat" value="bilingual">
+                            <span>Bilingual (Side by Side) 双语对照</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button class="btn-primary" id="translateBtn">
+                    🚀 Start Translation 开始翻译
+                </button>
+            </section>
+
+            <!-- Step 3: Translation Progress -->
+            <section class="card" id="progressCard" style="display: none;">
+                <h2 class="card-title">⏳ Step 3: Translating...</h2>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p class="progress-text" id="progressText">Preparing translation...</p>
+                    <p class="progress-detail" id="progressDetail"></p>
+                </div>
+            </section>
+
+            <!-- Step 4: Preview & Download -->
+            <section class="card" id="resultCard" style="display: none;">
+                <h2 class="card-title">✅ Step 4: Translation Complete!</h2>
+
+                <div class="preview-container">
+                    <h3>Preview 预览</h3>
+                    <div class="preview-tabs" id="previewTabs"></div>
+                    <div class="preview-content" id="previewContent"></div>
+                </div>
+
+                <div class="result-actions">
+                    <button class="btn-primary btn-large" id="downloadBtn">
+                        ⬇️ Download Translated Excel 下载翻译后的文件
+                    </button>
+                    <button class="btn-secondary btn-large" id="startOverBtn">
+                        🔄 Translate Another File 翻译另一个文件
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Ultimate Translator v1.3.0 - Excel Translation Feature</p>
+        </footer>
+    </div>
+
+    <!-- Load SheetJS library -->
+    <script src="libs/xlsx.full.min.js"></script>
+    <!-- Load translator script -->
+    <script src="excel-translator.js"></script>
+</body>
+</html>

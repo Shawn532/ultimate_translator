@@ -1,12 +1,21 @@
 {
   "manifest_version": 3,
   "name": "Ultimate Translator (无敌翻译器)",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "无敌翻译器，很牛逼。 Ultimate Translator, very NB!",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "Ultimate Translator"
   },
   "background": {
     "service_worker": "background.js"
@@ -54,6 +63,17 @@
       "js": ["content.js"],
       "run_at": "document_end",
       "all_frames": false
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "excel-translator.html",
+        "excel-translator.css",
+        "excel-translator.js",
+        "libs/xlsx.full.min.js"
+      ],
+      "matches": ["<all_urls>"]
     }
   ]
 }
