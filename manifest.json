@@ -1,0 +1,59 @@
+{
+  "manifest_version": 3,
+  "name": "Ultimate Translator (无敌翻译器)",
+  "version": "1.2.0",
+  "description": "无敌翻译器，很牛逼。 Ultimate Translator, very NB!",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "commands": {
+    "translate-now": {
+      "suggested_key": {
+        "default": "Alt+T",
+        "mac": "Alt+T"
+      },
+      "description": "Translate the current page with Ultimate Translator"
+    },
+    "restore-original": {
+      "suggested_key": {
+        "default": "Alt+R",
+        "mac": "Alt+R"
+      },
+      "description": "Restore the page to its original language"
+    },
+    "set-cn-to-en": {
+      "suggested_key": {
+        "default": "Alt+E",
+        "mac": "Alt+E"
+      },
+      "description": "Set Chinese to English and translate"
+    },
+    "set-en-to-cn": {
+      "suggested_key": {
+        "default": "Alt+C",
+        "mac": "Alt+C"
+      },
+      "description": "Set English to Chinese and translate"
+    }
+  },
+  "permissions": [
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_end",
+      "all_frames": false
+    }
+  ]
+}
