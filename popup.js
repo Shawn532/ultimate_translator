@@ -45,6 +45,7 @@ async function init() {
         uiLanguage: 'zh',
         localLanguage: 'chinese_simplified',
         targetLanguage: 'english',
+        translationService: 'edge',
         translateTextareas: false,
         showFloatBall: false
     });
@@ -53,6 +54,7 @@ async function init() {
     // document.getElementById('ui-lang').value = config.uiLanguage; // UI Language selector hidden
     document.getElementById('source-lang').value = config.localLanguage;
     document.getElementById('target-lang').value = config.targetLanguage;
+    document.getElementById('translation-service').value = config.translationService || 'edge';
     document.getElementById('translate-textareas').checked = config.translateTextareas;
     document.getElementById('show-float-ball').checked = config.showFloatBall;
 
@@ -101,6 +103,18 @@ function bindEvents(config) {
     document.getElementById('target-lang').addEventListener('change', async (e) => {
         config.targetLanguage = e.target.value;
         await storage.set('translateConfig', config);
+    });
+
+    // Translation Service change
+    document.getElementById('translation-service').addEventListener('change', async (e) => {
+        const service = e.target.value;
+        config.translationService = service;
+        await storage.set('translateConfig', config);
+
+        console.log(`Translation service changed to: ${service}`);
+
+        // Notify content script
+        sendMessageToCurrentTab({ type: 'UPDATE_CONFIG', key: 'translationService', value: service });
     });
 
     // Translate button

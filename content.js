@@ -36,6 +36,7 @@ const storage = {
                 uiLanguage: 'zh',  // Default to Chinese
                 localLanguage: 'chinese_simplified',
                 targetLanguage: 'english',
+                translationService: 'edge',  // Default to Edge Translator (edge or google)
                 floatBallSize: isMobile() ? 45 : 50,
                 floatBallPosition: { x: 20, y: 100 },
                 floatBallOpacity: 0.8,
@@ -104,10 +105,34 @@ const storage = {
         }
     };
 
-    // Language mapping
+    // Language mapping for Google Translate
     const LANGUAGE_MAP = {
         'chinese_simplified': 'zh-CN',
         'chinese_traditional': 'zh-TW',
+        'english': 'en',
+        'spanish': 'es',
+        'french': 'fr',
+        'german': 'de',
+        'japanese': 'ja',
+        'korean': 'ko',
+        'russian': 'ru',
+        'arabic': 'ar',
+        'portuguese': 'pt',
+        'italian': 'it',
+        'dutch': 'nl',
+        'polish': 'pl',
+        'turkish': 'tr',
+        'vietnamese': 'vi',
+        'hindi': 'hi',
+        'hebrew': 'he',
+        'thai': 'th',
+        'indonesian': 'id'
+    };
+
+    // Language mapping for Microsoft Edge Translator (uses different codes)
+    const EDGE_LANGUAGE_MAP = {
+        'chinese_simplified': 'zh-Hans',
+        'chinese_traditional': 'zh-Hant',
         'english': 'en',
         'spanish': 'es',
         'french': 'fr',
@@ -264,9 +289,13 @@ const storage = {
 
                 console.log(`Found ${textNodes.length} text nodes to translate`);
 
+                // Get translation service and use appropriate language map
+                const translationService = this.configManager.get('translationService') || 'edge';
+                const langMap = translationService === 'edge' ? EDGE_LANGUAGE_MAP : LANGUAGE_MAP;
+
                 // Convert language codes
-                const sourceCode = LANGUAGE_MAP[sourceLang] || 'auto';
-                const targetCode = LANGUAGE_MAP[targetLang] || 'zh-CN';
+                const sourceCode = langMap[sourceLang] || sourceLang;
+                const targetCode = langMap[targetLang] || targetLang;
 
                 // Collect all texts and save originals with deduplication
                 const textsToTranslate = [];
@@ -305,9 +334,13 @@ const storage = {
                 console.log(`Translating ${textsToTranslate.length} unique texts (from ${textNodes.length} nodes)...`);
                 console.log('Texts to translate:', textsToTranslate);
 
+                // Determine message type based on translation service
+                const messageType = translationService === 'edge' ? 'TRANSLATE_BATCH_EDGE' : 'TRANSLATE_BATCH';
+                console.log(`Using translation service: ${translationService} (type: ${messageType})`);
+
                 // Send all texts at once to background for batch translation
                 const response = await chrome.runtime.sendMessage({
-                    type: 'TRANSLATE_BATCH',
+                    type: messageType,
                     texts: textsToTranslate,
                     sourceLang: sourceCode,
                     targetLang: targetCode
@@ -474,8 +507,12 @@ const storage = {
             if (textNodes.length === 0) return;
 
             try {
-                const sourceCode = LANGUAGE_MAP[sourceLang] || 'auto';
-                const targetCode = LANGUAGE_MAP[targetLang] || 'zh-CN';
+                // Get translation service and use appropriate language map
+                const translationService = this.configManager.get('translationService') || 'edge';
+                const langMap = translationService === 'edge' ? EDGE_LANGUAGE_MAP : LANGUAGE_MAP;
+
+                const sourceCode = langMap[sourceLang] || sourceLang;
+                const targetCode = langMap[targetLang] || targetLang;
 
                 const textsToTranslate = [];
                 const nodeGroups = new Map(); // Map text -> array of nodes
@@ -503,8 +540,11 @@ const storage = {
 
                 console.log(`Auto-translating ${textsToTranslate.length} unique new texts (from ${textNodes.length} total nodes)...`);
 
+                // Determine message type based on translation service
+                const messageType = translationService === 'edge' ? 'TRANSLATE_BATCH_EDGE' : 'TRANSLATE_BATCH';
+
                 const response = await chrome.runtime.sendMessage({
-                    type: 'TRANSLATE_BATCH',
+                    type: messageType,
                     texts: textsToTranslate,
                     sourceLang: sourceCode,
                     targetLang: targetCode
@@ -1178,8 +1218,9 @@ const storage = {
                 }
 
                 if (message.type === 'HOTKEY_TRANSLATE') {
-                    const sourceLang = configManager.get('localLanguage');
-                    const targetLang = configManager.get('targetLanguage');
+                    // Use language from message if provided, otherwise use config
+                    const sourceLang = message.sourceLang || configManager.get('localLanguage');
+                    const targetLang = message.targetLang || configManager.get('targetLanguage');
                     translator.translatePage(sourceLang, targetLang);
                 } else if (message.type === 'HOTKEY_RESTORE') {
                     translator.restoreOriginal();

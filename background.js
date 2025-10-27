@@ -1,8 +1,8 @@
 // Background service worker - handles translation API requests (bypasses CSP!)
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    // Google Translate API
     if (request.type === 'TRANSLATE_BATCH') {
-        // Translate multiple texts at once
         const promises = request.texts.map(text => {
             const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${request.sourceLang || 'auto'}&tl=${request.targetLang}&dt=t&q=${encodeURIComponent(text)}`;
             return fetch(url)
@@ -12,7 +12,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     return { success: true, translation: translation };
                 })
                 .catch(error => {
-                    console.error('Translation API error:', error);
+                    console.error('Google Translate API error:', error);
                     return { success: false, error: error.message, original: text };
                 });
         });
@@ -24,6 +24,75 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             .catch(error => {
                 sendResponse({ success: false, error: error.message });
             });
+
+        return true;
+    }
+
+    // Microsoft Edge Translator (free, unlimited)
+    if (request.type === 'TRANSLATE_BATCH_EDGE') {
+        const { texts, sourceLang, targetLang } = request;
+
+        console.log('[Edge Translator] Translating', texts.length, 'texts from', sourceLang, 'to', targetLang);
+
+        // First, get auth token from Edge
+        fetch('https://edge.microsoft.com/translate/auth', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        })
+        .then(response => response.text())
+        .then(authToken => {
+            console.log('[Edge Translator] Got auth token');
+
+            // Build translate URL - omit 'from' parameter for auto-detection
+            const to = targetLang;
+            const translateUrl = sourceLang === 'auto'
+                ? `https://api.cognitive.microsofttranslator.com/translate?to=${to}&api-version=3.0&includeSentenceLength=true`
+                : `https://api.cognitive.microsofttranslator.com/translate?from=${sourceLang}&to=${to}&api-version=3.0&includeSentenceLength=true`;
+
+            console.log('[Edge Translator] Translate URL:', translateUrl);
+
+            // Prepare request body (Microsoft expects array of objects with "Text" field)
+            const requestBody = texts.map(text => ({ Text: text }));
+            console.log('[Edge Translator] Request body sample:', requestBody.slice(0, 3));
+
+            // Make translation request
+            return fetch(translateUrl, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
+        })
+        .then(response => {
+            console.log('[Edge Translator] Response status:', response.status);
+            if (!response.ok) {
+                return response.text().then(text => {
+                    console.error('[Edge Translator] Error response:', text);
+                    throw new Error(`HTTP ${response.status}: ${text}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('[Edge Translator] Translation successful, received', data.length, 'results');
+            console.log('[Edge Translator] Sample result:', data[0]);
+
+            // Microsoft returns array of translation objects
+            const results = data.map(item => ({
+                success: true,
+                translation: item.translations[0].text
+            }));
+
+            sendResponse({ success: true, translations: results });
+        })
+        .catch(error => {
+            console.error('[Edge Translator] Error:', error);
+            sendResponse({ success: false, error: error.message });
+        });
 
         return true;
     }
