@@ -6,14 +6,40 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #f5f7fa;
     min-height: 100vh;
     padding: 20px;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Watermark background with repeating "无敌" text */
+body::before {
+    content: '无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌 无敌';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    z-index: 0;
+    pointer-events: none;
+    font-size: 120px;
+    font-weight: 900;
+    color: rgba(0, 0, 0, 0.3);
+    line-height: 240px;
+    word-spacing: 180px;
+    transform: rotate(-45deg);
+    transform-origin: center center;
+    white-space: normal;
+    letter-spacing: 30px;
+    font-family: "STKaiti", "KaiTi", "Kaiti SC", "SimKai", serif;
 }
 
 .container {
     max-width: 900px;
     margin: 0 auto;
+    position: relative;
+    z-index: 1;
 }
 
 /* Header */
@@ -556,9 +582,9 @@ body {
 .footer {
     text-align: center;
     padding: 20px;
-    color: white;
+    color: #333;
     font-size: 13px;
-    opacity: 0.9;
+    opacity: 0.8;
     margin-top: 20px;
 }
 

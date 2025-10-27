@@ -50,7 +50,7 @@ async function init() {
     });
 
     // Set UI values
-    document.getElementById('ui-lang').value = config.uiLanguage;
+    // document.getElementById('ui-lang').value = config.uiLanguage; // UI Language selector hidden
     document.getElementById('source-lang').value = config.localLanguage;
     document.getElementById('target-lang').value = config.targetLanguage;
     document.getElementById('translate-textareas').checked = config.translateTextareas;
@@ -66,18 +66,20 @@ async function init() {
 function updateUILanguage(lang) {
     const t = UI_TRANSLATIONS[lang];
 
-    document.getElementById('ui-lang-label').textContent = t.uiLangLabel;
+    // document.getElementById('ui-lang-label').textContent = t.uiLangLabel; // UI Language selector hidden
     document.getElementById('source-lang-label').textContent = t.sourceLangLabel;
     document.getElementById('target-lang-label').textContent = t.targetLangLabel;
-    document.getElementById('translate-btn-text').textContent = t.translateBtn;
-    document.getElementById('restore-btn-text').textContent = t.restoreBtn;
+    // Buttons now have bilingual text in HTML, no need to update
+    // document.getElementById('translate-btn-text').textContent = t.translateBtn;
+    // document.getElementById('restore-btn-text').textContent = t.restoreBtn;
     document.getElementById('textarea-label').textContent = t.textareaLabel;
     document.getElementById('float-ball-label').textContent = t.floatBallLabel;
     document.getElementById('excel-btn-text').textContent = t.excelBtn;
 }
 
 function bindEvents(config) {
-    // UI Language change
+    // UI Language change (disabled - UI Language selector hidden)
+    /*
     document.getElementById('ui-lang').addEventListener('change', async (e) => {
         const lang = e.target.value;
         config.uiLanguage = lang;
@@ -87,6 +89,7 @@ function bindEvents(config) {
         // Notify content script
         sendMessageToCurrentTab({ type: 'UPDATE_CONFIG', key: 'uiLanguage', value: lang });
     });
+    */
 
     // Source Language change
     document.getElementById('source-lang').addEventListener('change', async (e) => {
