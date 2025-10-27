@@ -34,13 +34,13 @@ const storage = {
             this.defaultConfig = {
                 enabled: true,
                 uiLanguage: 'zh',  // Default to Chinese
-                localLanguage: 'english',
-                targetLanguage: 'chinese_simplified',
+                localLanguage: 'chinese_simplified',
+                targetLanguage: 'english',
                 floatBallSize: isMobile() ? 45 : 50,
                 floatBallPosition: { x: 20, y: 100 },
                 floatBallOpacity: 0.8,
                 autoTranslate: false,
-                showFloatBall: true,
+                showFloatBall: false,  // Default to hidden (controlled from popup)
                 allowHalfBall: true,
                 panelPosition: null,
                 panelSize: isMobile() ? 0.9 : 1,
@@ -1170,7 +1170,7 @@ const storage = {
             await configManager.loadConfig();
 
             const translator = new Translator(configManager);
-            new UIManager(configManager, translator);
+            const uiManager = new UIManager(configManager, translator);
 
             chrome.runtime.onMessage.addListener((message) => {
                 if (!message || !message.type) {
@@ -1193,6 +1193,23 @@ const storage = {
                     configManager.set('localLanguage', 'english');
                     configManager.set('targetLanguage', 'chinese_simplified');
                     translator.translatePage('english', 'chinese_simplified');
+                } else if (message.type === 'UPDATE_CONFIG') {
+                    // Handle config updates from popup
+                    const { key, value } = message;
+                    configManager.set(key, value);
+
+                    // Special handling for showFloatBall
+                    if (key === 'showFloatBall') {
+                        const floatBall = uiManager.floatBallShadow.querySelector('.float-ball');
+                        if (floatBall) {
+                            floatBall.style.display = value ? 'flex' : 'none';
+                        }
+                    }
+
+                    // Special handling for UI language
+                    if (key === 'uiLanguage') {
+                        uiManager.updateUILanguage(value);
+                    }
                 }
             });
 

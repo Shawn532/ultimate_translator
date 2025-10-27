@@ -14,20 +14,110 @@
         </div>
 
         <div class="popup-body">
-            <button class="feature-btn" id="web-translate-btn">
-                <div class="btn-icon">🌍</div>
-                <div class="btn-content">
-                    <div class="btn-title">Webpage Translation</div>
-                    <div class="btn-desc">网页翻译</div>
-                </div>
-            </button>
+            <!-- UI Language -->
+            <div class="form-group">
+                <label for="ui-lang">
+                    <span id="ui-lang-label">界面语言</span>
+                    <span class="label-en">UI Language</span>
+                </label>
+                <select id="ui-lang" class="select-input">
+                    <option value="zh">中文</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
 
-            <button class="feature-btn" id="excel-translate-btn">
-                <div class="btn-icon">📊</div>
-                <div class="btn-content">
-                    <div class="btn-title">Excel Translation</div>
-                    <div class="btn-desc">Excel文件翻译</div>
+            <!-- Language Selection -->
+            <div class="language-row">
+                <div class="form-group form-group-half">
+                    <label for="source-lang">
+                        <span id="source-lang-label">源语言</span>
+                        <span class="label-en">Source</span>
+                    </label>
+                    <select id="source-lang" class="select-input">
+                        <option value="chinese_simplified">简体中文</option>
+                        <option value="english">English</option>
+                        <option value="chinese_traditional">繁體中文</option>
+                        <option value="japanese">日本語</option>
+                        <option value="korean">한국어</option>
+                        <option value="spanish">Español</option>
+                        <option value="french">Français</option>
+                        <option value="german">Deutsch</option>
+                        <option value="russian">Русский</option>
+                        <option value="portuguese">Português</option>
+                        <option value="italian">Italiano</option>
+                        <option value="arabic">العربية</option>
+                        <option value="dutch">Nederlands</option>
+                        <option value="polish">Polski</option>
+                        <option value="turkish">Türkçe</option>
+                        <option value="vietnamese">Tiếng Việt</option>
+                        <option value="hindi">हिन्दी</option>
+                        <option value="hebrew">עברית</option>
+                        <option value="thai">ไทย</option>
+                        <option value="indonesian">Bahasa Indonesia</option>
+                    </select>
                 </div>
+
+                <div class="arrow">→</div>
+
+                <div class="form-group form-group-half">
+                    <label for="target-lang">
+                        <span id="target-lang-label">目标语言</span>
+                        <span class="label-en">Target</span>
+                    </label>
+                    <select id="target-lang" class="select-input">
+                        <option value="english">English</option>
+                        <option value="chinese_simplified">简体中文</option>
+                        <option value="chinese_traditional">繁體中文</option>
+                        <option value="japanese">日本語</option>
+                        <option value="korean">한국어</option>
+                        <option value="spanish">Español</option>
+                        <option value="french">Français</option>
+                        <option value="german">Deutsch</option>
+                        <option value="russian">Русский</option>
+                        <option value="portuguese">Português</option>
+                        <option value="italian">Italiano</option>
+                        <option value="arabic">العربية</option>
+                        <option value="dutch">Nederlands</option>
+                        <option value="polish">Polski</option>
+                        <option value="turkish">Türkçe</option>
+                        <option value="vietnamese">Tiếng Việt</option>
+                        <option value="hindi">हिन्दी</option>
+                        <option value="hebrew">עברית</option>
+                        <option value="thai">ไทย</option>
+                        <option value="indonesian">Bahasa Indonesia</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="button-row">
+                <button id="translate-btn" class="btn-primary">
+                    <span id="translate-btn-text">🚀 立即翻译</span>
+                    <span class="btn-shortcut">(Alt+T)</span>
+                </button>
+                <button id="restore-btn" class="btn-secondary">
+                    <span id="restore-btn-text">↩️ 恢复原文</span>
+                    <span class="btn-shortcut">(Alt+R)</span>
+                </button>
+            </div>
+
+            <!-- Options -->
+            <div class="options-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="translate-textareas">
+                    <span id="textarea-label">翻译文本框内容</span>
+                    <span class="label-en-inline">Translate Textareas</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="show-float-ball">
+                    <span id="float-ball-label">显示悬浮球</span>
+                    <span class="label-en-inline">Show Floating Ball</span>
+                </label>
+            </div>
+
+            <!-- Excel Translation Button -->
+            <button id="excel-btn" class="excel-btn">
+                📊 <span id="excel-btn-text">Excel文件翻译</span> <span class="label-en-inline">Excel Translation</span> →
             </button>
         </div>
 
