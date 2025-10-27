@@ -220,7 +220,8 @@ function detectSheetColumns(sheetName) {
             index: colIndex,
             letter: columnLetter,
             preview: preview,
-            selected: true // All columns selected by default
+            translateHeader: true,  // Translate header (row 1) by default
+            translateData: true     // Translate data (row 2+) by default
         });
     });
 
@@ -264,34 +265,54 @@ function updateColumnSelectionDisplay() {
         grid.id = `columns-${sheetName}`;
 
         columns.forEach((col, index) => {
-            const item = document.createElement('label');
-            item.className = 'column-item';
+            const item = document.createElement('div');
+            item.className = 'column-item-wrapper';
 
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.checked = col.selected;
-            checkbox.dataset.sheet = sheetName;
-            checkbox.dataset.colIndex = col.index;
-            checkbox.addEventListener('change', (e) => {
-                col.selected = e.target.checked;
+            // Column header with preview
+            const colHeader = document.createElement('div');
+            colHeader.className = 'column-item-header';
+            colHeader.innerHTML = `
+                <strong>Column ${col.letter}</strong>
+                <span class="column-preview-inline">${col.preview}</span>
+            `;
+
+            // Translation options
+            const options = document.createElement('div');
+            options.className = 'column-options';
+
+            // Header checkbox
+            const headerLabel = document.createElement('label');
+            headerLabel.className = 'option-label';
+            const headerCheckbox = document.createElement('input');
+            headerCheckbox.type = 'checkbox';
+            headerCheckbox.checked = col.translateHeader;
+            headerCheckbox.dataset.sheet = sheetName;
+            headerCheckbox.dataset.colIndex = col.index;
+            headerCheckbox.addEventListener('change', (e) => {
+                col.translateHeader = e.target.checked;
             });
+            headerLabel.appendChild(headerCheckbox);
+            headerLabel.appendChild(document.createTextNode(' Translate Header 翻译表头'));
 
-            const info = document.createElement('div');
-            info.className = 'column-info';
+            // Data checkbox
+            const dataLabel = document.createElement('label');
+            dataLabel.className = 'option-label';
+            const dataCheckbox = document.createElement('input');
+            dataCheckbox.type = 'checkbox';
+            dataCheckbox.checked = col.translateData;
+            dataCheckbox.dataset.sheet = sheetName;
+            dataCheckbox.dataset.colIndex = col.index;
+            dataCheckbox.addEventListener('change', (e) => {
+                col.translateData = e.target.checked;
+            });
+            dataLabel.appendChild(dataCheckbox);
+            dataLabel.appendChild(document.createTextNode(' Translate Data 翻译数据'));
 
-            const labelText = document.createElement('span');
-            labelText.className = 'column-label';
-            labelText.textContent = `Column ${col.letter}`;
+            options.appendChild(headerLabel);
+            options.appendChild(dataLabel);
 
-            const previewText = document.createElement('span');
-            previewText.className = 'column-preview';
-            previewText.textContent = col.preview;
-
-            info.appendChild(labelText);
-            info.appendChild(previewText);
-
-            item.appendChild(checkbox);
-            item.appendChild(info);
+            item.appendChild(colHeader);
+            item.appendChild(options);
 
             grid.appendChild(item);
         });
@@ -307,7 +328,10 @@ window.selectAllColumns = function(sheetName) {
     const columns = sheetColumnsMap.get(sheetName);
     if (!columns) return;
 
-    columns.forEach(col => col.selected = true);
+    columns.forEach(col => {
+        col.translateHeader = true;
+        col.translateData = true;
+    });
 
     // Update UI
     const checkboxes = document.querySelectorAll(`#columns-${sheetName} input[type="checkbox"]`);
@@ -318,7 +342,10 @@ window.deselectAllColumns = function(sheetName) {
     const columns = sheetColumnsMap.get(sheetName);
     if (!columns) return;
 
-    columns.forEach(col => col.selected = false);
+    columns.forEach(col => {
+        col.translateHeader = false;
+        col.translateData = false;
+    });
 
     // Update UI
     const checkboxes = document.querySelectorAll(`#columns-${sheetName} input[type="checkbox"]`);
@@ -409,26 +436,23 @@ async function translateSheet(sheet, sheetName, sourceLang, targetLang, outputFo
         return sheet; // Empty sheet, return as is
     }
 
-    // Get selected columns for this sheet
+    // Get column configuration for this sheet
     const sheetColumns = sheetColumnsMap.get(sheetName) || [];
-    const selectedColumnIndices = sheetColumns
-        .filter(col => col.selected)
-        .map(col => col.index);
 
-    // If no columns selected, return original sheet
-    if (selectedColumnIndices.length === 0) {
-        return sheet;
-    }
-
-    // Collect all unique texts for batch translation (only from selected columns)
+    // Collect all unique texts for batch translation based on column settings
     const textsToTranslate = new Set();
     const textMap = new Map(); // Original -> Translated mapping
 
-    data.forEach(row => {
+    data.forEach((row, rowIndex) => {
         row.forEach((cell, colIndex) => {
-            // Only process if this column is selected
-            if (selectedColumnIndices.includes(colIndex) &&
-                cell && typeof cell === 'string' && cell.trim()) {
+            const colConfig = sheetColumns.find(col => col.index === colIndex);
+            if (!colConfig) return; // Column not in config
+
+            // Determine if this cell should be translated
+            const isHeaderRow = (rowIndex === 0);
+            const shouldTranslate = isHeaderRow ? colConfig.translateHeader : colConfig.translateData;
+
+            if (shouldTranslate && cell && typeof cell === 'string' && cell.trim()) {
                 textsToTranslate.add(cell.trim());
             }
         });
@@ -463,12 +487,17 @@ async function translateSheet(sheet, sheetName, sourceLang, targetLang, outputFo
         });
     }
 
-    // Apply translations to data (only to selected columns)
-    const translatedData = data.map(row => {
+    // Apply translations to data based on column settings
+    const translatedData = data.map((row, rowIndex) => {
         return row.map((cell, colIndex) => {
-            // Only translate if this column is selected
-            if (selectedColumnIndices.includes(colIndex) &&
-                cell && typeof cell === 'string' && cell.trim()) {
+            const colConfig = sheetColumns.find(col => col.index === colIndex);
+            if (!colConfig) return cell; // Column not in config, keep original
+
+            // Determine if this cell should be translated
+            const isHeaderRow = (rowIndex === 0);
+            const shouldTranslate = isHeaderRow ? colConfig.translateHeader : colConfig.translateData;
+
+            if (shouldTranslate && cell && typeof cell === 'string' && cell.trim()) {
                 const translated = textMap.get(cell.trim()) || cell;
 
                 if (outputFormat === 'bilingual') {
@@ -477,7 +506,7 @@ async function translateSheet(sheet, sheetName, sourceLang, targetLang, outputFo
                     return translated;
                 }
             }
-            return cell; // Keep original for non-selected columns
+            return cell; // Keep original for non-translated cells
         });
     });
 
