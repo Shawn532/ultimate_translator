@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git checkout:*)",
+      "Bash(curl:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Read(//var/folders/08/30p_rpdd77n131s00vz9bhw00000gn/T/TemporaryItems/NSIRD_screencaptureui_reum8P/**)",
+      "Read(//var/folders/08/30p_rpdd77n131s00vz9bhw00000gn/T/TemporaryItems/NSIRD_screencaptureui_oL6zCt/**)",
+      "Read(//var/folders/08/30p_rpdd77n131s00vz9bhw00000gn/T/TemporaryItems/NSIRD_screencaptureui_qfbspd/**)",
+      "Read(//var/folders/08/30p_rpdd77n131s00vz9bhw00000gn/T/TemporaryItems/NSIRD_screencaptureui_4XkAxN/**)",
+      "Read(//var/folders/08/30p_rpdd77n131s00vz9bhw00000gn/T/TemporaryItems/NSIRD_screencaptureui_dT2AyI/**)",
+      "Read(//var/folders/08/30p_rpdd77n131s00vz9bhw00000gn/T/TemporaryItems/NSIRD_screencaptureui_6tegYF/**)",
+      "Read(//var/folders/08/30p_rpdd77n131s00vz9bhw00000gn/T/TemporaryItems/NSIRD_screencaptureui_zYEOQ7/**)",
+      "Read(//var/folders/08/30p_rpdd77n131s00vz9bhw00000gn/T/TemporaryItems/NSIRD_screencaptureui_cKpvcA/**)",
+      "WebSearch",
+      "Read(//Users/xiaoxiang/Desktop/**)",
+      "Bash(zip -r:*)",
+      "Bash(rm:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

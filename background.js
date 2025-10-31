@@ -99,6 +99,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 chrome.commands.onCommand.addListener((command) => {
+    console.log('[Hotkey] Command received:', command);
+
     let messageType = null;
 
     if (command === 'translate-now') {
@@ -112,18 +114,26 @@ chrome.commands.onCommand.addListener((command) => {
     }
 
     if (!messageType) {
+        console.warn('[Hotkey] Unknown command:', command);
         return;
     }
+
+    console.log('[Hotkey] Sending message type:', messageType);
 
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
         const [tab] = tabs;
         if (!tab || tab.id === undefined) {
+            console.warn('[Hotkey] No active tab found');
             return;
         }
 
+        console.log('[Hotkey] Sending to tab:', tab.id);
+
         chrome.tabs.sendMessage(tab.id, { type: messageType }, () => {
             if (chrome.runtime.lastError) {
-                console.warn('Ultimate Translator hotkey message failed:', chrome.runtime.lastError.message);
+                console.warn('[Hotkey] Message failed:', chrome.runtime.lastError.message);
+            } else {
+                console.log('[Hotkey] Message sent successfully');
             }
         });
     });

@@ -235,9 +235,38 @@ body {
     text-align: center;
     background: #f8f9fa;
     border-top: 1px solid #e0e0e0;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .version {
     font-size: 11px;
     color: #999;
+}
+
+/* Feedback Button */
+.feedback-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 11px;
+    color: #667eea;
+    text-decoration: none;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: rgba(102, 126, 234, 0.08);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+}
+
+.feedback-btn:hover {
+    background: rgba(102, 126, 234, 0.15);
+    color: #5568d3;
+    transform: translateY(-50%) scale(1.05);
 }

@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Ultimate Translator - Multi-API",
+  "version": "1.4.0",
+  "description": "Translate web pages with multiple translation services: Microsoft Edge, Google, Baidu & more. Works in China! (网页翻译工具，支持多种翻译服务，中国可用)",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_end",
+      "all_frames": false
+    }
+  ]
+}
